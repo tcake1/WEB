@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}실시간 이슈{% endblock title %}
+{% block style %}
+    <style>
+        div{
+        text-align:center;
+        }
+            #box1 {
+            text-align: right;
+            padding-right: 330px;
+        }
+
+        table.tableSorter th div.sortArrow {
+	        width: 11px;
+	        height: 6px;
+	        display: inline-block;
+	        margin-left: 5px;
+	        vertical-align: 2px;
+	        position: relative;
+        }
+
+        table.tableSorter th div.sortArrow div.sortArrowAscending,
+        table.tableSorter th div.sortArrow div.sortArrowDescending {
+	        position: absolute;
+	        display: none;
+	        width: 11px;
+	        height: 6px;
+        }
+
+        table.tableSorter th div.sortArrow div.sortArrowAscending {
+	        background: url("{{ url_for('static', filename='arrow_asc.PNG')}}") no-repeat;
+        }
+
+        table.tableSorter th div.sortArrow div.sortArrowDescending {
+	        background: url("{{ url_for('static', filename='arrow_desc.PNG')}}") no-repeat;
+        }
+
+    </style>
+    {# text-align:left,center,right 후 padding과 margin을 사용하여 여백을 설정한다. 노가다 해야함 #}
+{% endblock style %}
+
+{% block content %}
+<div id="box1">
+* 1시간 마다 업데이트 됩니다
+</div>
+
+<div class="well">
+    <table class="tableSorter" style="width: 1300px" align="center">
+      <thead class="thead-dark" >
+        <tr>
+          <th>순위</th>
+          <th>제목</th>
+          <th>청원만료일</th>
+          <th id="participate">참여인원</th>
+          <th style="width: 36px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>도피중인 조현천의 연금지급 중지하라</td>
+          <td>2019-08-23</td>
+          <td>1890</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>대마도에서 낚시로 낚은 고기를 부산 세관에서 그냥 통과하고 있다고 합니다. 막아주십시오.</td>
+          <td>2019-09-08</td>
+          <td>1543</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>**건설이 절대강자이자 포식자인지? 아니면 정부가 무능한 건가요?</td>
+          <td>2019-08-18</td>
+          <td>1524</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>일본불매운동</td>
+          <td>2019-09-01</td>
+          <td>1467</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>서민 울리는 PD수첩 방영 조합아파트 비리 척결해 주세요</td>
+          <td>2019-08-21</td>
+          <td>1185</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>웃지좀 마시죠</td>
+          <td>201999</td>
+          <td>1133</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>앞에 두명</td>
+          <td>123</td>
+          <td>1333</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>hhhhhhhhhhhhhh</td>
+          <td>144</td>
+          <td>1332</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>ㅗㅜㅗㅜㅗㅜㅗㅜㅗㅜㅗㅜ</td>
+          <td>1455</td>
+          <td>1555</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>ㅡㅇ라ㅣㄴ으ㅏㅣㅈ데ㅐ르ㅔㅐㄴ</td>
+          <td>1322</td>
+          <td>1442</td>
+        </tr>
+      </tbody>
+    </table>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="{{url_for('static', filename='tsort.min.js')}}"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('table').tableSort({
+            animation :'slide',
+            speed:1000
+        });
+
+        $('th#participate').trigger('click');
+        $('th#participate').trigger('click');
+    });
+</script>
+{% endblock script %}

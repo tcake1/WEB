@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}민원 CLOUD{% endblock %}
+{% block style %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/searchbar.css') }}">
+{% endblock style %}
+
+{% block content %}
+    <div id="search">
+        <img src="/static/images/logo.png" height="180px" width="250px" align="center"
+             style="margin-top: 220px;margin-bottom: 50px;">
+        <form action="{{ url_for('search_page') }}" method="post" autocomplete="off">
+            <div class="container h-100">
+                <div class="d-flex justify-content-center h-100">
+                    <div class="searchbar">
+                        <input id=input_text class="search_input" type="text" name='search' placeholder="민원을 입력해주세요! (2자 이상)" autocomplete="off">
+                        <input class="search_text" type="image" src="/static/images/search_icon.png">
+                        <script>
+                            var input = document.getElementById("input_text");
+                            input.addEventListener("keyup", function (event) {
+                                if (event.keyCode === 13) {
+                                    event.preventDefault();
+                                    document.getElementById("search_button").click();
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% block title %}검색 결과{% endblock title %}
+{% block style %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/searchbar.css') }}">
+    <style>
+        #local-section{
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        svg {
+            top:0px;
+        }
+
+        svg text {
+          pointer-events: none;
+        }
+        svg .municipality {
+          fill: #1d639f;
+          stroke: #fff;
+        }
+        svg .municipality-label {
+          fill: white;
+          font-size: 12px;
+          font-weight: 300;
+          text-anchor: middle;
+        }
+        svg #map text {
+          color: #333;
+          font-size: 12px;
+          text-anchor: middle;
+          font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        path:hover{
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        path.link {
+        fill: none;
+        stroke-width: 2px;
+        }
+    </style>
+{% endblock style %}
+
+{% block content %}
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+      <h1 class="display-4 mb-4">검색 결과</h1>
+      <form action="{{ url_for('search_page') }}" method="post" autocomplete="off">
+         <div class="container h-100" >
+          <div class="d-flex justify-content-center h-100">
+            <div class="searchbar" >
+              <input id=input_text class="search_input" name='search' type="text" placeholder="{{ search }}" autocomplete="off" >
+              <input class="search_text" type="image" src="/static/images/search_icon.png"  >
+              <script>
+                var input = document.getElementById("input_text");
+                input.addEventListener("keyup", function(event) {
+                  if (event.keyCode === 13) {
+                   event.preventDefault();
+                   document.getElementById("search_button").click();
+                  }
+                });
+               </script>
+            </div>
+          </div>
+            </div>
+        </form>
+    </div>
+    <div class="container-fluid">
+        <div id="minwon-list" class="carousel slide" data-ride="carousel" style="padding-left:16%;padding-right:12%", data-interval="false">
+            <div class="carousel-inner">
+            {% if opinions %}
+                {% for op in opinions %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <div class="card-deck mb-3 ml-1 mr-1">
+                            {%  for o in op %}
+                                <div class="card" style="width:18rem;cursor:pointer;max-width:249.99px;" onclick="location.href='{{ url_for('search_detail', index=o.index) }}'; ">
+                                      <div class="card-header">
+                                          <h5 style="margin-bottom:0;">
+                                              {{o.title}}
+                                          </h5>
+                                      </div>
+                                      <ul class="list-group list-group-flush">
+                                        <li id="question-card" class="list-group-item">{{o.question|safe}}</li>
+                                        <li id="answer-card" class="list-group-item">{{o.ans|safe}}</li>
+                                      </ul>
+                                      <div class="card-footer text-right">
+                                        <small class="text-muted">{{o.part}}</small>
+                                      </div>
+                                    </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {%  endfor %}
+            {% else %}
+                    ----------------- 검색 결과 없을 때 처리 ----------------
+            {% endif %}
+            </div>
+            <a class="carousel-control-prev" href="#minwon-list" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#minwon-list" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+
+        <div id="local-section" class="d-flex justify-content-center mb-4">
+            <div class="card-deck">
+                 <div id="local-map" class="card text-center" style="min-width:530px;max-width:530px">
+                     <div class="card-header">
+                         <h2></h2>
+                     </div>
+                     <div class="card-body" style="min-height: 450px">
+                         <div id="chart"></div>
+                     </div>
+                 </div>
+                 <div id="local-keywords" class="card text-center" style="min-width:530px;max-width:530px">
+                     <div class="card-header">
+                         <h2>1년간 지역별 추이</h2>
+                     </div>
+                     <div class="card-body" style="padding:0rem;min-height: 450px">
+                        <div class="chart" id="time-graph">
+                        </div>
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block script %}
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+{#    <script type="text/javascript" src="http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js" charset="UTF-8"></script>#}
+    <script src="https://d3js.org/d3-color.v1.min.js"></script>
+    <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.0.0.js"></script>
+    <script src="{{ url_for('static',filename='plotly-latest.min.js') }}"></script>
+    <script>
+        var width = 510,
+            height = 400;
+        var svg = d3.select("#chart").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        var map = svg.append("g").attr("id", "map");
+        var projection = d3.geo.mercator()
+            .center([126.9895, 37.5651])
+            .scale(60000)
+            .translate([width/2, height/2]);
+        var path = d3.geo.path().projection(projection);
+        d3.json("{{url_for('static', filename='seoul_municipalities_topo_simple.json')}}", function (error, data) {
+            var features = topojson.feature(data, data.objects.seoul_municipalities_geo).features;
+
+            map.selectAll("path")
+                .data(features)
+                .enter().append("path")
+                .attr("class", function (d) {
+                    console.log();
+                    return "municipality c" + d.properties.code
+                })
+                .attr("d", path)
+                .on("click", function(d){
+                    var name = d.properties.name;
+
+                    d3.select("#local-keywords .card-header h2")
+                        .data([name])
+                        .text(function(d){
+                            return "1년간 " + d + " 추이";
+                        })
+
+
+                    $.ajax({
+                        url:"{{ url_for('draw_monthly_graph') }}",
+                        type:"POST",
+                        data:{
+                            "name":name,
+                            "search":"{{ search }}"
+                        },
+                        success:function(response){
+                            var graphs = JSON.parse(response);
+                            Plotly.purge('time-graph');
+                            Plotly.plot('time-graph',graphs,{});
+                        }
+                    })
+
+
+
+                    d3.selectAll("path")
+                        .attr({
+                            opacity:1
+                        })
+
+                    d3.select(this)
+                        .attr({
+                            opacity:0.6
+                        })
+                })
+
+
+            map.selectAll("text")
+                .data(features)
+                .enter().append("text")
+                .attr("transform", function (d) {
+                    return "translate(" + path.centroid(d) + ")";
+                })
+                .attr("dy", ".35em")
+                .attr("class", "municipality-label")
+                .text(function (d) {
+                    return d.properties.name;
+                })
+
+            map.selectAll(".municipality")
+                .data(features)
+                .style("fill", function(d){
+                    var topic = {{ c|safe }}.topicName;
+                    var rates = {{ c|safe }}.result;
+
+                    d3.select("#local-map h2")
+                        .data([topic])
+                        .text(function(d){
+                            return d + " 관련 민원";
+                        })
+
+                    for(var i=0; i < rates.length; i++){
+                        if(rates[i].name == d.properties.name){
+                            return d3.interpolateBlues(rates[i].rate * 0.8 + 0.2);
+                        }
+                    }
+                })
+
+        });
+    </script>
+{% endblock %}

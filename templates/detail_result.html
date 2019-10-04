@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}상세 결과{% endblock title %}
+
+{% block style %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <style>
+        body {
+            background-color:#f4f5f6;
+        }
+    </style>
+{% endblock style %}
+
+{% block content %}
+
+    <div class="container-fluid">
+   <div class="row">
+      <div class="col-md-12">
+         <div class="row">
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-6">
+                    <div class="my-3 p-3 bg-white" style="border:1px solid #e5e5e5; border-radius:10px">
+                        <div class="d-flex flex-row bd-highlight mb-3">
+                            <div class="p-2 bd-highlight">
+                                <i class="fab far fa-angry fa-3x" style="color:#1d639f"></i>
+                            </div>
+                            <div class="p-2 bd-highlight">
+                                <h5 class="pb-2 mb-0"><strong>{{opinion.title}}</strong></h5>
+                                <span class="pb-2 mb-0" style="color:#8c8c8c">{{ opinion.date }}  |  조회수 : {{ opinion.view }}</span>
+                            </div>
+                        </div>
+
+                        <hr class="line">
+                        <div class="media pt-3">
+                        <p class="media-body pb-3 mb-0 lh-125">
+                            {{opinion.question|safe}}
+                        </p>
+                        </div>
+                    </div>
+                </div>
+            <div class="col-md-3">
+            </div>
+         </div>
+      </div>
+   </div>
+    </div>
+
+    <div class="container-fluid">
+   <div class="row">
+      <div class="col-md-12">
+         <div class="row">
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-6">
+                    <div class="my-3 p-3 bg-white" style="border:1px solid #e5e5e5; border-radius:10px">
+                        <div class="d-flex flex-row bd-highlight mb-3">
+                            <div class="p-2 bd-highlight">
+                                <i class="far fa-smile-wink fa-3x" style="color:#1d639f"></i>
+                            </div>
+                            <div class="p-2 bd-highlight">
+                                 <h5 class="pb-2 mb-0"><strong>re : {{opinion.title}}</strong></h5>
+                                <span class="pb-2 mb-0" style="color:#8c8c8c">{{ opinion.part }}</span>
+                            </div>
+                        </div>
+                        <hr class="line">
+                        <div class="media pt-3">
+                        <p class="media-body pb-3 mb-0 lh-125">
+                            {{opinion.ans|safe}}
+                            {{ opinion.view }}
+                        </p>
+                        </div>
+                    </div>
+                </div>
+            <div class="col-md-3">
+            </div>
+         </div>
+      </div>
+   </div>
+    </div>
+
+{% endblock content %}

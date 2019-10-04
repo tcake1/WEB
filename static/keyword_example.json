@@ -1,0 +1,10 @@
+{
+  "name": "",
+  "children": [
+    {"keyword":"도로", "count":10},
+    {"keyword":"공사", "count":8},
+    {"keyword":"설치", "count":5},
+    {"keyword":"공원", "count":3},
+    {"keyword":"쓰레기", "count":1}
+  ]
+}

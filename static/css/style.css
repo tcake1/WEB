@@ -1,0 +1,77 @@
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.card {
+    overflow:hidden;
+	border-radius: 15px;
+	display: inline-block;
+	margin-top: 30px;
+	margin-left: 30px;
+	margin-bottom: 30px;
+	position: relative;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.card-header {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 2; /* number of lines to show */
+   line-height: 18px;        /* fallback */
+   height: 63px;       /* fallback */
+}
+
+.list-group-item {
+   overflow: hidden;
+   text-overflow: ellipsis;
+   display: -webkit-box;
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 4; /* number of lines to show */
+   line-height: 25px;        /* fallback */
+   height: 117px;       /* fallback */
+}
+
+.card-footer {
+    padding: .5rem .8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-height: 25px;
+    height: 40px;
+}
+
+.carousel-control-next, .carousel-control-prev {
+    top:50%;
+    bottom:50%;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  height: 100px;
+  width: 100px;
+  outline: black;
+  background-size: 100%, 100%;
+  border-radius: 50%;
+  background-image: none;
+}
+
+.carousel-control-next-icon:after
+{
+  content: '>';
+  font-size: 55px;
+  color: black;
+}
+
+.carousel-control-prev-icon:after {
+  content: '<';
+  font-size: 55px;
+  color: black;
+}
+
+.modal-content {
+    border-radius: 15px;
+}

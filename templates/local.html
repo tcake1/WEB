@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% block title %}지역별 민원{% endblock title %}
+{% block style %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <style>
+        #content{
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        svg {
+            top:0px;
+        }
+
+        svg text {
+          pointer-events: none;
+        }
+        svg .municipality {
+          fill: #1d639f;
+          stroke: #fff;
+        }
+        svg .municipality-label {
+          fill: white;
+          font-size: 12px;
+          font-weight: 300;
+          text-anchor: middle;
+        }
+        svg #map text {
+          color: #333;
+          font-size: 12px;
+          text-anchor: middle;
+          font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        path:hover{
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        path.link {
+        fill: none;
+        stroke-width: 2px;
+        }
+    </style>
+{% endblock style %}
+
+{% block content %}
+     <div id="map-section">
+         <div class="card text-center" style="width:700px; height:600px;">
+             <div class="card-header text-white bg-dark mb-0" style="height: 100px;">
+                 <h2 style="line-height: 90px">지역 선택</h2>
+             </div>
+             <div class="card-body" style="padding:0rem;">
+                 <div id="chart"></div>
+             </div>
+         </div>
+         <div class="card text-center" style="width:700px; height:600px">
+             <div class="card-header text-white bg-dark mb-3" style="height: 100px">
+                 <h2 style="line-height: 90px">지역별 키워드</h2>
+             </div>
+             <div class="card-body" style="padding:0rem;">
+                 <div id="region_name">
+                     <h4></h4>
+                 </div>
+                 <div id="vis"></div>
+             </div>
+         </div>
+     </div>
+
+{% endblock content %}
+
+{% block script %}
+     <script src="http://d3js.org/d3.v3.min.js"></script>
+     <script src="http://d3js.org/topojson.v1.min.js"></script>
+     <script type="text/javascript" src="http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js" charset="UTF-8"></script>
+     <script>
+        var width = 550,
+            height = 500;
+        var svg = d3.select("#chart").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        var map = svg.append("g").attr("id", "map");
+        var projection = d3.geo.mercator()
+            .center([126.9895, 37.5651])
+            .scale(70000)
+            .translate([width/2, height/2]);
+        var path = d3.geo.path().projection(projection);
+        d3.json("{{url_for('static', filename='seoul_municipalities_topo_simple.json')}}", function (error, data) {
+            var features = topojson.feature(data, data.objects.seoul_municipalities_geo).features;
+            map.selectAll("path")
+                .data(features)
+                .enter().append("path")
+                .attr("class", function (d) {
+                    console.log();
+                    return "municipality c" + d.properties.code
+                })
+                .attr("d", path)
+                .on("click", function(d){
+                    var name = [d.properties.name];
+
+                    keyword(name);
+
+                    d3.selectAll("path")
+                        .attr({
+                            opacity:1
+                        })
+
+                    d3.select(this)
+                        .attr({
+                            opacity:0.6
+                        })
+                })
+
+
+            map.selectAll("text")
+                .data(features)
+                .enter().append("text")
+                .attr("transform", function (d) {
+                    return "translate(" + path.centroid(d) + ")";
+                })
+                .attr("dy", ".35em")
+                .attr("class", "municipality-label")
+                .text(function (d) {
+                    return d.properties.name;
+                })
+
+        });
+
+        function keyword(name) {// some colour variables
+            d3.select("#vis > *").remove();
+
+            var tcBlack = "#130C0E";
+
+            // rest of vars
+            var w = 700,
+                h = 500,
+                maxNodeSize = 50,
+                x_browser = 0,
+                y_browser = 0,
+                root;
+
+            var vis;
+            var force = d3.layout.force();
+
+            vis = d3.select("#vis").append("svg").attr("width", w).attr("height", h);
+
+            d3.json("{{ url_for('static', filename='keyword_example.json') }}", function (json) {
+
+                root = json;
+                root.name=name;
+                root.fixed = true;
+                root.x = w / 2;
+                root.y = h / 4;
+
+                // Build the path
+                var defs = vis.insert("svg:defs")
+                    .data(["end"]);
+
+
+                defs.enter().append("svg:path")
+                    .attr("d", "M0,-5L10,0L0,5");
+
+                update();
+            });
+
+
+            function update() {
+                var nodes = flatten(root),
+                    links = d3.layout.tree().links(nodes);
+
+                // Restart the force layout.
+                force.nodes(nodes)
+                    .links(links)
+                    .gravity(0.05)
+                    .charge(-1500)
+                    .linkDistance(200)
+                    .friction(0.5)
+                    .linkStrength(function (l, i) {
+                        return 1;
+                    })
+                    .size([w, h])
+                    .on("tick", tick)
+                    .start();
+
+                var path = vis.selectAll("path.link")
+                    .data(links, function (d) {
+                        return d.target.id;
+                    });
+
+                path.enter().insert("svg:path")
+                    .attr("class", "link")
+                    // .attr("marker-end", "url(#end)")
+                    .style("stroke", "#eee");
+
+
+                // Exit any old paths.
+                path.exit().remove();
+
+
+                // Update the nodes…
+                var node = vis.selectAll("g.node")
+                    .data(nodes, function (d) {
+                        return d.id;
+                    });
+
+
+                // Enter any new nodes.
+                var nodeEnter = node.enter().append("svg:g")
+                    .attr("class", "node")
+                    .attr("transform", function (d) {
+                        return "translate(" + d.x + "," + d.y + ")";
+                    })
+                    .call(force.drag);
+
+                // Append a circle
+                nodeEnter.append("svg:circle")
+                    .attr("r", function (d) {
+                        return d.count * 10 || 40;
+                    })
+                    .style("fill", "#eee");
+
+
+                nodeEnter.append("text")
+                    .attr("class", "nodetext")
+                    .attr("fill", tcBlack)
+                    .text(function (d) {
+                        return d.keyword || d.name;
+                    });
+
+
+                // Exit any old nodes.
+                node.exit().remove();
+
+
+                // Re-select for update.
+                path = vis.selectAll("path.link");
+                node = vis.selectAll("g.node");
+
+                function tick() {
+
+
+                    path.attr("d", function (d) {
+
+                        var dx = d.target.x - d.source.x,
+                            dy = d.target.y - d.source.y,
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        return "M" + d.source.x + ","
+                            + d.source.y
+                            + "A" + dr + ","
+                            + dr + " 0 0,1 "
+                            + d.target.x + ","
+                            + d.target.y;
+                    });
+                    node.attr("transform", nodeTransform);
+                }
+            }
+
+
+            /**
+             * Gives the coordinates of the border for keeping the nodes inside a frame
+             * http://bl.ocks.org/mbostock/1129492
+             */
+            function nodeTransform(d) {
+                d.x = Math.max(maxNodeSize, Math.min(w - (d.imgwidth / 2 || 16), d.x));
+                d.y = Math.max(maxNodeSize, Math.min(h - (d.imgheight / 2 || 16), d.y));
+                return "translate(" + d.x + "," + d.y + ")";
+            }
+
+
+            /**
+             * Returns a list of all nodes under the root.
+             */
+            function flatten(root) {
+                var nodes = [];
+                var i = 0;
+
+                function recurse(node) {
+                    if (node.children)
+                        node.children.forEach(recurse);
+                    if (!node.id)
+                        node.id = ++i;
+                    nodes.push(node);
+                }
+
+                recurse(root);
+                return nodes;
+            }
+        }
+     </script>
+
+{% endblock script %}
