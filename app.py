@@ -16,7 +16,7 @@ app.config['WHOOSHEE_MIN_STRING_LEN'] = 2
 db.init_app(app)
 whooshee.init_app(app)
 
-# 희석쓰
+#sql 
 sql_engine = sql.create_engine('sqlite:///final_data.db')
 data = pd.read_sql_table('minwon_table',sql_engine)
 data.date = pd.to_datetime(data.date)
@@ -24,6 +24,8 @@ a = data[data.date > '2018-08-01']
 a.date = a.date.astype(str)
 #okt=Okt()
 @app.route('/')
+
+#whooshee.reindex() 최초 1회 실행 whooshee 파일 생성됨
 def index():
 #    whooshee.reindex()
     return render_template('main.html')
