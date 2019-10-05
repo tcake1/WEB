@@ -7,3 +7,9 @@
 app.py -> python flask를 기반으로 작성한 프로젝트 웹 서비스 main
 
 minwon_search.py -> 검색어를 월별, 지역별로 나누기 위한 프로그램
+
+templates -> html file
+
+static -> css, js, json file
+
+whooshee -> whooshee 라이브러리를 사용하여 db에 적용 최초 1회 
